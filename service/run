@@ -1,4 +1,4 @@
 #!/bin/sh
-echo "*** starting dbus-multiplus-emulator ***"
+echo "*** starting mp2-emulator ***"
 exec 2>&1
-exec python /data/etc/dbus-multiplus-emulator/dbus-multiplus-emulator.py
+exec python /data/apps/mp2_emulator/mp2_emulator.py

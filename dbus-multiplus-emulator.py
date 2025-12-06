@@ -16,7 +16,7 @@ from dbus.mainloop.glib import DBusGMainLoop
 
 
 # import Victron Energy packages
-sys.path.insert(1, os.path.join(os.path.dirname(__file__), "ext", "velib_python"))
+sys.path.insert(1, "/opt/victronenergy/dbus-systemcalc-py/ext/velib_python")
 from vedbus import VeDbusService
 from vedbus import VeDbusItemImport
 
@@ -148,16 +148,37 @@ class DbusMultiPlusEmulator:
         # self._dbusservice.add_path('/Position', 0)
         # self._dbusservice.add_path('/StatusCode', 0)
 
-        self._dbusservice.add_path("/Ac/ActiveIn/CurrentLimit", 50.0, writeable=True)
+        # Initial value for CurrentLimit
+        initial_current_limit = 50.0
+        
+        # Add ActiveIn/CurrentLimit path with a change callback
+        self._dbusservice.add_path(
+            "/Ac/ActiveIn/CurrentLimit",
+            initial_current_limit,
+            writeable=True,
+            onchangecallback=self._handle_active_in_current_limit_change
+        )
 
         for path, settings in self._paths.items():
-            self._dbusservice.add_path(
-                path,
-                settings["initial"],
-                gettextcallback=settings["textformat"],
-                writeable=True,
-                # onchangecallback=self._handlechangedvalue,
-            )
+            # If the path is Ac/In/1/CurrentLimit, set its initial value to match Ac/ActiveIn/CurrentLimit
+            # and assign the change callback.
+            if path == "/Ac/In/1/CurrentLimit":
+                self._dbusservice.add_path(
+                    path,
+                    initial_current_limit,  # Set initial value to match ActiveIn
+                    gettextcallback=settings["textformat"],
+                    writeable=True,
+                    onchangecallback=self._handle_ac_in_1_current_limit_change
+                )
+            # For all other paths, use the original logic.
+            else:
+                self._dbusservice.add_path(
+                    path,
+                    settings["initial"],
+                    gettextcallback=settings["textformat"],
+                    writeable=True,
+                    # onchangecallback=self._handlechangedvalue,
+                )
 
         # create empty dictionaries for later use
         self.system_items = {}
@@ -176,6 +197,29 @@ class DbusMultiPlusEmulator:
         Returns the value if it is not None, otherwise 0.
         """
         return value if value is not None else 0
+
+
+    def _handle_active_in_current_limit_change(self, path, value):
+        """
+        Callback triggered when /Ac/ActiveIn/CurrentLimit changes.
+        Sets /Ac/In/1/CurrentLimit to the new value.
+        """
+        logging.info(f"ActiveIn/CurrentLimit changed to {value}. Propagating to Ac/In/1/CurrentLimit.")
+        # Ensure we are not triggering a recursive call by only changing the other path
+        if self._dbusservice["/Ac/In/1/CurrentLimit"] != value:
+            self._dbusservice["/Ac/In/1/CurrentLimit"] = value
+        return True  # Accept the change
+
+    def _handle_ac_in_1_current_limit_change(self, path, value):
+        """
+        Callback triggered when /Ac/In/1/CurrentLimit changes.
+        Sets /Ac/ActiveIn/CurrentLimit to the new value.
+        """
+        logging.info(f"Ac/In/1/CurrentLimit changed to {value}. Propagating to ActiveIn/CurrentLimit.")
+        # Ensure we are not triggering a recursive call by only changing the other path
+        if self._dbusservice["/Ac/ActiveIn/CurrentLimit"] != value:
+            self._dbusservice["/Ac/ActiveIn/CurrentLimit"] = value
+        return True  # Accept the change
 
     def _update(self):
         global data_watt_hours, data_watt_hours_timespan, data_watt_hours_save
