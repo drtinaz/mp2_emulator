@@ -42,22 +42,18 @@ except Exception:
     sys.exit()
 
 
-# Get logging level from config.ini
-# ERROR = shows errors only
-# WARNING = shows ERROR and warnings
-# INFO = shows WARNING and running functions
-# DEBUG = shows INFO and data/values
-if "DEFAULT" in config and "logging" in config["DEFAULT"]:
-    if config["DEFAULT"]["logging"] == "DEBUG":
-        logging.basicConfig(level=logging.DEBUG)
-    elif config["DEFAULT"]["logging"] == "INFO":
-        logging.basicConfig(level=logging.INFO)
-    elif config["DEFAULT"]["logging"] == "ERROR":
-        logging.basicConfig(level=logging.ERROR)
-    else:
-        logging.basicConfig(level=logging.WARNING)
-else:
-    logging.basicConfig(level=logging.WARNING)
+logger = logging.getLogger()
+
+for handler in logger.handlers[:]:
+    logger.removeHandler(handler)
+
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+console_handler = logging.StreamHandler(sys.stdout)
+console_handler.setFormatter(formatter)
+
+logger.addHandler(console_handler)
+logger.setLevel(logging.INFO) # Default to DEBUG for better visibility
 
 # get values from config.ini file
 phase_used = config["DEFAULT"]["phase_used"].replace(" ", "").split(",")
