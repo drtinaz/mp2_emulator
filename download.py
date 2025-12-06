@@ -56,7 +56,7 @@ def select_driver():
     while True:
         for num, driver_info in DRIVER_CONFIGS.items():
             print(f"{num}) {driver_info['name']}")
-        print("6) Exit Script")
+        print("7) Exit Script")
         
         choice = input("\nSelect a driver to install (1-6) or 7 to exit: ")
         
