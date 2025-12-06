@@ -1,3 +1,0 @@
-[tool.black]
-line-length = 216
-exclude = 'dbus-multiplus-emulator/ext'
