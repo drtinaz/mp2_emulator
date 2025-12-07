@@ -95,14 +95,14 @@ if os.path.isfile(data_watt_hours_working_file):
     with open(data_watt_hours_working_file, "r") as file:
         file = open(data_watt_hours_working_file, "r")
         json_data = json.load(file)
-        logging.info("Loaded JSON for OutToInverter (charging)/InverterToOut (discharging) once")
+        logging.debug("Loaded JSON for OutToInverter (charging)/InverterToOut (discharging) once")
         logging.debug(json.dumps(json_data))
 # if not, check if file in persistent storage exists
 elif os.path.isfile(data_watt_hours_storage_file):
     with open(data_watt_hours_storage_file, "r") as file:
         file = open(data_watt_hours_storage_file, "r")
         json_data = json.load(file)
-        logging.info("Loaded JSON for OutToInverter (charging)/InverterToOut (discharging) once from persistent storage")
+        logging.debug("Loaded JSON for OutToInverter (charging)/InverterToOut (discharging) once from persistent storage")
         logging.debug(json.dumps(json_data))
 else:
     json_data = {}
@@ -324,7 +324,7 @@ class DbusMultiPlusEmulator:
                 with open(data_watt_hours_storage_file, "w") as file:
                     file.write(json.dumps(json_data))
                 timestamp_storage_file = timestamp
-                logging.info("Written JSON for OutToInverter (charging)/InverterToOut (discharging) to persistent storage.")
+                logging.debug("Written JSON for OutToInverter (charging)/InverterToOut (discharging) to persistent storage.")
 
             # begin a new cycle
             data_watt_hours_dc = {
