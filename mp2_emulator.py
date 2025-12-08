@@ -139,11 +139,6 @@ class DbusMultiPlusEmulator:
         self._dbusservice.add_path("/HardwareVersion", "1.0.0-beta1 (20241029)")
         self._dbusservice.add_path("/Connected", 1)
 
-        # self._dbusservice.add_path('/Latency', None)
-        # self._dbusservice.add_path('/ErrorCode', 0)
-        # self._dbusservice.add_path('/Position', 0)
-        # self._dbusservice.add_path('/StatusCode', 0)
-
         # Initial value for CurrentLimit
         initial_current_limit = 50.0
         
@@ -221,23 +216,12 @@ class DbusMultiPlusEmulator:
         global data_watt_hours, data_watt_hours_timespan, data_watt_hours_save
         global data_watt_hours_storage_file, data_watt_hours_working_file, json_data, timestamp_storage_file
 
-        # ##################################################################################################################
-
-        # check for changes in the dbus service list
-        # if int(time()) % 15 == 0 or self.system_items == {}:
-        #     start = time()
-        #     self.system_items, self.grid_items, self.ac_load_items = setup_dbus_external_items()
-        #     logging.info("Time to setup external dbus items: %s seconds" % (time() - start))
-
         # get DC values
         dc_power = self.zeroIfNone(self.system_items["/Dc/Battery/Power"].get_value())
         dc_voltage = self.zeroIfNone(self.system_items["/Dc/Battery/Voltage"].get_value())
         dc_current = self.zeroIfNone(self.system_items["/Dc/Battery/Current"].get_value())
 
         # # # calculate watthours
-        # measure power and calculate watthours, since it provides only watthours for production/import/consumption and no export
-        # divide charging and discharging from dc
-        # charging (+)
         dc_power_charging = dc_power if dc_power > 0 else 0
         # discharging (-)
         dc_power_discharging = dc_power * -1 if dc_power < 0 else 0
@@ -547,12 +531,6 @@ class DbusMultiPlusEmulator:
 
         self._dbusservice["/Energy/InverterToAcOut"] = json_data["dc"]["discharging"] if "dc" in json_data and "discharging" in json_data["dc"] else 0
         self._dbusservice["/Energy/OutToInverter"] = json_data["dc"]["charging"] if "dc" in json_data and "charging" in json_data["dc"] else 0
-
-        # self._dbusservice["/Hub/ChargeVoltage"] = self.system_items["/Info/MaxChargeVoltage"]
-
-        # self._dbusservice["/Leds/Absorption"] = 1 if self.system_items["/Info/ChargeMode"].startswith("Absorption") else 0
-        # self._dbusservice["/Leds/Bulk"] = 1 if self.system_items["/Info/ChargeMode"].startswith("Bulk") else 0
-        # self._dbusservice["/Leds/Float"] = 1 if self.system_items["/Info/ChargeMode"].startswith("Float") else 0
         self._dbusservice["/Soc"] = self.system_items["/Dc/Battery/Soc"].get_value()
 
         # increment UpdateIndex - to show that new data is available
@@ -1414,15 +1392,6 @@ def main():
         {
             "/Hub4/Sustain": {"initial": 0, "textformat": _n},
             "/Hub4/TargetPowerIsMaxFeedIn": {"initial": 0, "textformat": _n},
-            # ----
-            # "/Interfaces/Mk2/Connection": {"initial": "/dev/ttyS3", "textformat": _n},
-            # "/Interfaces/Mk2/ProductId": {"initial": 4464, "textformat": _n},
-            # "/Interfaces/Mk2/ProductName": {"initial": "MK3", "textformat": _n},
-            # "/Interfaces/Mk2/Status/Baudrate": {"initial": 115200, "textformat": _n},
-            # "/Interfaces/Mk2/Status/BusFreeMode": {"initial": 1, "textformat": _n},
-            # "/Interfaces/Mk2/Tunnel": {"initial": None, "textformat": _n},
-            # "/Interfaces/Mk2/Version": {"initial": 1170216, "textformat": _n},
-            # ----
             "/Leds/Absorption": {"initial": 0, "textformat": _n},
             "/Leds/Bulk": {"initial": 0, "textformat": _n},
             "/Leds/Float": {"initial": 0, "textformat": _n},
@@ -1447,7 +1416,6 @@ def main():
             "/VebusError": {"initial": 0, "textformat": _n},
             "/VebusMainState": {"initial": 9, "textformat": _n},
             "/VebusSetChargeState": {"initial": 0, "textformat": _n},
-            # ----
             "/UpdateIndex": {"initial": 0, "textformat": _n},
         }
     )
